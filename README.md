@@ -1,4 +1,3 @@
-
 # StackView
 
 StackView est un dashboard moderne pour superviser et contrôler dynamiquement des scripts Dockerisés (Node.js, Python, Bash, etc.) à travers une interface web en temps réel.
@@ -79,16 +78,16 @@ Accède à http://localhost:3333
 3. Mets à jour le `docker-compose.yml` :
 
 ```yaml
-  script-monscript:
-    build: ./scripts/Script-MonService
-    container_name: Script-MonService
-    environment:
-      - TOKEN=MySuperSecretToken2024
-      - SCRIPT_NAME=Script-MonService
-      - CATEGORY=Autre
-    depends_on:
-      - dashboard
-    restart: unless-stopped
+script-monscript:
+  build: ./scripts/Script-MonService
+  container_name: Script-MonService
+  environment:
+    - TOKEN=MySuperSecretToken2024
+    - SCRIPT_NAME=Script-MonService
+    - CATEGORY=Autre
+  depends_on:
+    - dashboard
+  restart: unless-stopped
 ```
 
 ### Variables d’environnement importantes
