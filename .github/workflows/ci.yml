@@ -29,7 +29,7 @@ jobs:
 
       - name: 🔁 Attendre que le dashboard soit prêt
         run: |
-          for i in {1..10}; do
+          for i in {1..15}; do
             if docker exec dashboard curl -s http://localhost:3333 | grep "<!DOCTYPE html>"; then
               echo "✅ Dashboard prêt"
               exit 0
