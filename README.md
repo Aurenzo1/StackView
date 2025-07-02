@@ -19,6 +19,7 @@ StackView est un dashboard moderne pour superviser et contrôler dynamiquement d
 
 ## Architecture
 
+```
 .
 ├── dashboard/ # Le dashboard principal (serveur Express/Socket.io + frontend)
 │ ├── front/ # Fichiers statiques (index.html, dashboard-front.js, styles)
@@ -29,6 +30,7 @@ StackView est un dashboard moderne pour superviser et contrôler dynamiquement d
 │ └── Script-Python/ # Exemple : Script Python monitoré
 ├── docker-compose.yml # Lancement multi-conteneurs Docker
 └── README.md # Ce fichier
+```
 
 ---
 
@@ -124,9 +126,12 @@ Chaque script doit se connecter au dashboard via Socket.io avec le bon token et 
 
 ## Auteurs & Contributeurs
 
-Projet **StackView** by Aurenzo (2025)
+Projet **StackView** by [TonNom] (2025)
 
 Contributions et améliorations bienvenues !
 
 ---
 
+## Licence
+
+Ce projet est open-source (licence MIT, à adapter selon ton usage)
