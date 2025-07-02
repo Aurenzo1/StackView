@@ -46,7 +46,7 @@ StackView est un dashboard moderne pour superviser et contrôler dynamiquement d
 ### 1. Cloner le projet
 
 ```bash
-git clone https://github.com/<ton-user>/StackView.git
+git clone https://github.com/Aurenzo1/StackView.git
 cd StackView
 ```
 
