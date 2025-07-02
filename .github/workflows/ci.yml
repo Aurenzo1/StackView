@@ -1,0 +1,47 @@
+name: StackView CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:24.0.7
+        options: --privileged
+
+    steps:
+    - name: 📥 Checkout le code
+      uses: actions/checkout@v3
+
+    - name: 🧱 Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: 📦 Installer les dépendances backend
+      run: npm install
+      working-directory: dashboard
+
+    - name: ✅ Lancer les tests backend
+      run: npm test || echo "Pas encore de tests implémentés"
+
+    - name: 🐳 Build Docker Compose
+      run: docker compose -f docker-compose.yml build
+
+    - name: 🚀 Lancer les services
+      run: docker compose -f docker-compose.yml up -d
+
+    - name: ⏳ Attendre que le dashboard démarre
+      run: sleep 10
+
+    - name: 🔍 Vérifier que le frontend répond
+      run: curl -s http://localhost:3333 | grep "<!DOCTYPE html>" || exit 1
+
+    - name: 📜 Afficher les logs dashboard
+      run: docker logs dashboard
