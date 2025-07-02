@@ -29,17 +29,20 @@ jobs:
 
       - name: 🔁 Attendre que le dashboard soit prêt
         run: |
-          for i in {1..10}; do
-            if docker exec dashboard curl -s http://localhost:3333 | grep "<!DOCTYPE html>"; then
-              echo "✅ Dashboard prêt"
+          ATTEMPTS=30
+          for i in $(seq 1 $ATTEMPTS); do
+            echo "⏳ Tentative $i/$ATTEMPTS : vérification dashboard..."
+            if curl -s http://localhost:3333 | grep -q "<!DOCTYPE html>"; then
+              echo "✅ Dashboard est prêt après $i tentatives"
               exit 0
             fi
-            echo "⏳ En attente du dashboard..."
             sleep 2
           done
-          echo "❌ Le dashboard ne répond pas après 20 secondes"
-          docker logs dashboard
+
+          echo "❌ Dashboard non disponible après $((ATTEMPTS * 2)) secondes"
+          docker logs dashboard || true
           exit 1
+
 
       - name: ✅ Vérifier les conteneurs actifs
         run: docker ps -a
