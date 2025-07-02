@@ -40,8 +40,10 @@ jobs:
     - name: ⏳ Attendre que le dashboard démarre
       run: sleep 10
 
-    - name: 🔍 Vérifier que le frontend répond
-      run: curl -s http://localhost:3333 | grep "<!DOCTYPE html>" || exit 1
+    - name: 🔍 Vérifier que le frontend répond depuis le conteneur
+      run: |
+        docker ps
+        docker exec dashboard curl -s http://localhost:3333 | grep "<!DOCTYPE html>" || exit 1
 
     - name: 📜 Afficher les logs dashboard
       run: docker logs dashboard
