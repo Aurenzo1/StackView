@@ -126,12 +126,6 @@ Chaque script doit se connecter au dashboard via Socket.io avec le bon token et 
 
 ## Auteurs & Contributeurs
 
-Projet **StackView** by [TonNom] (2025)
+Projet **StackView** by Aurenzo (2025)
 
 Contributions et améliorations bienvenues !
-
----
-
-## Licence
-
-Ce projet est open-source (licence MIT, à adapter selon ton usage)
