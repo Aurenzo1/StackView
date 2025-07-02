@@ -1,0 +1,22 @@
+[
+  {
+    "name": "PCPRICER",
+    "category": "PRICER",
+    "remote": true,
+    "host": "192.168.66.110",
+    "password" : "Pricer2025",
+    "user": "utilisateur"
+  },
+  { "name": "ExportOPUS", "category": "Exports", "remote": false },
+  { "name": "ExportCata", "category": "Exports", "remote": false, "graphique": true },
+  { "name": "ExportRayon", "category": "Exports", "remote": false },
+  { "name": "Latence Réseau", "category": "Réseau", "remote": false },
+  { "name": "IntegrationCata", "category": "Integration", "remote": false },
+  { "name": "HESTIAPI", "category": "API", "remote": false },
+  { "name": "LeLuc", "category": "Meteo", "remote": false },
+  { "name": "LeMuy", "category": "Meteo", "remote": false },
+  { "name": "Draguignan", "category": "Meteo", "remote": false },
+  { "name": "LeCannet", "category": "Meteo", "remote": false },
+  { "name": "LeThoronet", "category": "Meteo", "remote": false },
+  { "name": "WatcherCARJP", "category": "Conforama", "remote":false}
+]

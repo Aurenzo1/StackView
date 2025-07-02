@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build: ./dashboard
+    container_name: dashboard
+    ports:
+      - "3333:3333"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./dashboard/service-logs:/app/service-logs
+    restart: unless-stopped
+
+  script-node:
+    build: ./scripts/Script-Node
+    container_name: Script-Node
+    environment:
+      - TOKEN=MySuperSecretToken2024
+      - SCRIPT_NAME=Script-Node
+      - CATEGORY=NodeScripts
+    depends_on:
+      - dashboard
+    restart: no
+
+  script-python:
+    build: ./scripts/Script-Python
+    container_name: Script-Python
+    environment:
+      - TOKEN=MySuperSecretToken2024
+      - SCRIPT_NAME=Script-Python
+      - CATEGORY=PythonScripts
+    depends_on:
+      - dashboard
+    restart: no
+
+  # --- Ajoute ici d'autres scripts au besoin, ex :
+  # script3:
+  #   build: ./scripts/script3
+  #   container_name: script3
+  #   environment:
+  #     - TOKEN=MySuperSecretToken2024
+  #     - SCRIPT_NAME=script3
+  #     - CATEGORY=Autre
+  #   depends_on:
+  #     - dashboard
+  #   restart: unless-stopped
