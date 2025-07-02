@@ -1,15 +1,19 @@
 import os
 import time
+from threading import Event, Thread
+
 import socketio
-from threading import Thread, Event
 
 TOKEN = os.environ.get("TOKEN", "MySuperSecretToken2024")
 SCRIPT_NAME = os.environ.get("SCRIPT_NAME", "Script-Python")
 CATEGORY = os.environ.get("CATEGORY", "PythonScripts")
 
-sio = socketio.Client(reconnection=False)  # empêche le client de se reconnecter tout seul
+sio = socketio.Client(
+    reconnection=False
+)  # empêche le client de se reconnecter tout seul
 is_connected = Event()
 is_running = Event()
+
 
 def do_work():
     while True:
@@ -19,8 +23,12 @@ def do_work():
         # Simule le travail du script (OK)
         print(f"[{SCRIPT_NAME}] Tâche active - ping dashboard")
         sio.emit("log", {"name": SCRIPT_NAME, "log": "OK"})
-        sio.emit("stat_graphique", {"name": SCRIPT_NAME, "success": int(time.time() * 100) % 250})
+        sio.emit(
+            "stat_graphique",
+            {"name": SCRIPT_NAME, "success": int(time.time() * 100) % 250},
+        )
         time.sleep(5)
+
 
 def connect_dashboard():
     while True:
@@ -33,10 +41,12 @@ def connect_dashboard():
             print(f"Connexion échouée, nouvelle tentative dans 5s : {e}")
             time.sleep(5)
 
+
 @sio.event
 def connect():
     print(f"[{SCRIPT_NAME}] Connecté au dashboard")
     sio.emit("identify", {"name": SCRIPT_NAME, "token": TOKEN, "category": CATEGORY})
+
 
 @sio.on("action")
 def on_action(data):
@@ -61,11 +71,13 @@ def on_action(data):
         Thread(target=connect_dashboard, daemon=True).start()
         is_running.set()
 
+
 @sio.event
 def disconnect():
     print(f"[{SCRIPT_NAME}] Déconnecté du dashboard")
     is_connected.clear()
     is_running.clear()
+
 
 if __name__ == "__main__":
     Thread(target=do_work, daemon=True).start()
