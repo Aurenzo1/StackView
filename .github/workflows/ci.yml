@@ -1,4 +1,4 @@
-name: StackView CI
+name: CI StackView
 
 on:
   push:
@@ -7,43 +7,60 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  stackview-ci:
     runs-on: ubuntu-latest
-
     services:
       docker:
         image: docker:24.0.7
         options: --privileged
 
     steps:
-    - name: 📥 Checkout le code
-      uses: actions/checkout@v3
+      - name: 📥 Cloner le repo
+        uses: actions/checkout@v3
 
-    - name: 🧱 Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
+      - name: 🐳 Installer Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
 
-    - name: 📦 Installer les dépendances backend
-      run: npm install
-      working-directory: dashboard
+      - name: 🛠 Lancer les conteneurs
+        run: |
+          docker-compose up -d --build
 
-    - name: ✅ Lancer les tests backend
-      run: npm test || echo "Pas encore de tests implémentés"
+      - name: 🔁 Attendre que le dashboard soit prêt
+        run: |
+          for i in {1..10}; do
+            if docker exec dashboard curl -s http://localhost:3333 | grep "<!DOCTYPE html>"; then
+              echo "✅ Dashboard prêt"
+              exit 0
+            fi
+            echo "⏳ En attente du dashboard..."
+            sleep 2
+          done
+          echo "❌ Le dashboard ne répond pas après 20 secondes"
+          docker logs dashboard
+          exit 1
 
-    - name: 🐳 Build Docker Compose
-      run: docker compose -f docker-compose.yml build
+      - name: ✅ Vérifier les conteneurs actifs
+        run: docker ps -a
 
-    - name: 🚀 Lancer les services
-      run: docker compose -f docker-compose.yml up -d
+      - name: 🔍 Lint JavaScript (Node.js)
+        run: |
+          npm install -g eslint
+          cd dashboard && eslint dashboard-server.js front/*.js || true
 
-    - name: ⏳ Attendre que le dashboard démarre
-      run: sleep 10
+      - name: 🐍 Lint Python
+        run: |
+          sudo apt-get install -y python3-pip
+          pip3 install flake8
+          flake8 scripts/Script-Python --count --select=E9,F63,F7,F82 --show-source --statistics || true
 
-    - name: 🔍 Vérifier que le frontend répond depuis le conteneur
-      run: |
-        docker ps
-        docker exec dashboard curl -s http://localhost:3333 | grep "<!DOCTYPE html>" || exit 1
+      - name: 📄 Vérifier le format du README (Markdown Lint)
+        uses: DavidAnson/markdownlint-cli2-action@v13
+        with:
+          globs: "**/README.md"
 
-    - name: 📜 Afficher les logs dashboard
-      run: docker logs dashboard
+      - name: 🔚 Stop & Clean containers
+        if: always()
+        run: |
+          docker-compose down
