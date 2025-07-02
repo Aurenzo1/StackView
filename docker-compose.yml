@@ -6,10 +6,13 @@ services:
     container_name: dashboard
     ports:
       - "3333:3333"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3333"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./dashboard/service-logs:/app/service-logs
-    restart: unless-stopped
 
   script-node:
     build: ./scripts/Script-Node

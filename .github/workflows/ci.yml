@@ -1,4 +1,4 @@
-name: CI StackView
+name: CI - StackView
 
 on:
   push:
@@ -7,63 +7,54 @@ on:
     branches: [ main ]
 
 jobs:
-  stackview-ci:
+  build-and-test:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:24.0.7
-        options: --privileged
+    env:
+      DOCKER_BUILDKIT: 1
 
     steps:
-      - name: 📥 Cloner le repo
+      - name: 📥 Cloner le dépôt
         uses: actions/checkout@v3
 
-      - name: 🐳 Installer Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+      - name: 🐋 Lancer les containers Docker
+        run: docker compose up -d --build
 
-      - name: 🛠 Lancer les conteneurs
+      - name: 🕓 Attendre que le dashboard soit prêt (healthcheck)
         run: |
-          docker-compose up -d --build
-
-      - name: 🔁 Attendre que le dashboard soit prêt
-        run: |
-          ATTEMPTS=30
-          for i in $(seq 1 $ATTEMPTS); do
-            echo "⏳ Tentative $i/$ATTEMPTS : vérification dashboard..."
-            if curl -s http://localhost:3333 | grep -q "<!DOCTYPE html>"; then
-              echo "✅ Dashboard est prêt après $i tentatives"
+          for i in {1..20}; do
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' dashboard || echo "no-container")
+            echo "⏳ Statut santé du dashboard : $STATUS"
+            if [ "$STATUS" == "healthy" ]; then
+              echo "✅ Dashboard prêt après $i tentatives"
               exit 0
             fi
-            sleep 2
+            sleep 3
           done
-
-          echo "❌ Dashboard non disponible après $((ATTEMPTS * 2)) secondes"
+          echo "❌ Dashboard non prêt après 60s"
           docker logs dashboard || true
           exit 1
 
-
-      - name: ✅ Vérifier les conteneurs actifs
-        run: docker ps -a
-
-      - name: 🔍 Lint JavaScript (Node.js)
+      - name: 🔍 Vérifier que le frontend répond
         run: |
-          npm install -g eslint
-          cd dashboard && eslint dashboard-server.js front/*.js || true
+          curl -s http://localhost:3333 | grep "<!DOCTYPE html>" || {
+            echo "❌ Frontend ne répond pas !"
+            exit 1
+          }
 
-      - name: 🐍 Lint Python
+      - name: ✅ Lint JavaScript (dashboard/front)
         run: |
-          sudo apt-get install -y python3-pip
-          pip3 install flake8
-          flake8 scripts/Script-Python --count --select=E9,F63,F7,F82 --show-source --statistics || true
+          npm install eslint --prefix dashboard
+          npx eslint dashboard/front/*.js || exit 1
 
-      - name: 📄 Vérifier le format du README (Markdown Lint)
-        uses: DavidAnson/markdownlint-cli2-action@v13
-        with:
-          globs: "**/README.md"
-
-      - name: 🔚 Stop & Clean containers
-        if: always()
+      - name: 🐳 Vérifier les containers actifs
         run: |
-          docker-compose down
+          echo "🧪 Containers en cours :"
+          docker ps
+          [ "$(docker ps -q | wc -l)" -ge 3 ] || {
+            echo "❌ Moins de 3 containers actifs (dashboard + 2 scripts attendus)"
+            exit 1
+          }
+
+      - name: 📦 Logs dashboard en cas d'erreur
+        if: ${{ failure() }}
+        run: docker logs dashboard || true
