@@ -1,7 +1,7 @@
-const grid = document.getElementById('tileGrid');
-const sidebarNav = document.getElementById('sidebarNav');
-const detailsModal = document.getElementById('detailsModal');
-const modalInner = document.getElementById('modalInner');
+const grid = document.getElementById("tileGrid");
+const sidebarNav = document.getElementById("sidebarNav");
+const detailsModal = document.getElementById("detailsModal");
+const modalInner = document.getElementById("modalInner");
 
 let scripts = [];
 let categories = [];
@@ -13,22 +13,32 @@ let activityLogs = {};
 let modalChart = null;
 let currentModalScript = null;
 
-fetch('/service-logs/activity_logs.json')
-  .then(res => res.json())
-  .then(json => { activityLogs = json; });
+fetch("/service-logs/activity_logs.json")
+  .then((res) => res.json())
+  .then((json) => {
+    activityLogs = json;
+  });
 
 function renderSidebar() {
   sidebarNav.innerHTML = "";
-  const homeBtn = document.createElement('button');
+  const homeBtn = document.createElement("button");
   homeBtn.textContent = "Accueil";
-  homeBtn.classList.toggle('active', currentCategory === "home");
-  homeBtn.onclick = () => { currentCategory = "home"; renderSidebar(); renderTiles(); };
+  homeBtn.classList.toggle("active", currentCategory === "home");
+  homeBtn.onclick = () => {
+    currentCategory = "home";
+    renderSidebar();
+    renderTiles();
+  };
   sidebarNav.appendChild(homeBtn);
-  categories.forEach(cat => {
-    const btn = document.createElement('button');
+  categories.forEach((cat) => {
+    const btn = document.createElement("button");
     btn.textContent = cat;
-    btn.classList.toggle('active', currentCategory === cat);
-    btn.onclick = () => { currentCategory = cat; renderSidebar(); renderTiles(); };
+    btn.classList.toggle("active", currentCategory === cat);
+    btn.onclick = () => {
+      currentCategory = cat;
+      renderSidebar();
+      renderTiles();
+    };
     sidebarNav.appendChild(btn);
   });
 }
@@ -45,44 +55,55 @@ function renderTiles() {
       </div></div>`;
     return;
   }
-  scripts.filter(s => s.category === currentCategory).forEach(s => grid.appendChild(createTileForScript(s)));
+  scripts
+    .filter((s) => s.category === currentCategory)
+    .forEach((s) => grid.appendChild(createTileForScript(s)));
 }
 
 function createTileForScript(data) {
   const { name, category = "Autre" } = data;
-  let tile = document.createElement('div');
+  let tile = document.createElement("div");
   tile.className = "monitor-tile tile-compact";
   tile.id = `tile-${name}`;
 
-  const header = document.createElement('div');
+  const header = document.createElement("div");
   header.className = "tile-header";
-  const title = document.createElement('span');
+  const title = document.createElement("span");
   title.className = "tile-title";
   title.textContent = name;
-  const dot = document.createElement('span');
+  const dot = document.createElement("span");
   dot.className = "tile-status-dot";
-  header.appendChild(title); header.appendChild(dot);
+  header.appendChild(title);
+  header.appendChild(dot);
 
   // Actions
-  const actions = document.createElement('div');
-  actions.style.marginLeft = 'auto';
-  ['play', 'redo', 'stop'].forEach(action => {
-    const btn = document.createElement('button');
+  const actions = document.createElement("div");
+  actions.style.marginLeft = "auto";
+  ["play", "redo", "stop"].forEach((action) => {
+    const btn = document.createElement("button");
     btn.className = "tile-action-btn";
-    btn.title = action === 'play' ? 'Démarrer' : action === 'redo' ? 'Redémarrer' : 'Arrêter';
-    btn.innerHTML = action === 'play' ? '▶️' : action === 'redo' ? '🔄' : '⏹️';
-    btn.onclick = e => { e.stopPropagation(); window.sendAction && window.sendAction(name, action); };
+    btn.title =
+      action === "play"
+        ? "Démarrer"
+        : action === "redo"
+          ? "Redémarrer"
+          : "Arrêter";
+    btn.innerHTML = action === "play" ? "▶️" : action === "redo" ? "🔄" : "⏹️";
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      window.sendAction && window.sendAction(name, action);
+    };
     actions.appendChild(btn);
   });
   header.appendChild(actions);
   tile.appendChild(header);
 
-  const cat = document.createElement('div');
+  const cat = document.createElement("div");
   cat.className = "tile-category";
   cat.textContent = category;
   tile.appendChild(cat);
 
-  const detailsBtn = document.createElement('button');
+  const detailsBtn = document.createElement("button");
   detailsBtn.className = "tile-details-btn";
   detailsBtn.textContent = "Voir";
   detailsBtn.onclick = () => openDetailsModal(name);
@@ -90,9 +111,10 @@ function createTileForScript(data) {
 
   // Status couleur (tolérant pour toute forme de booléen)
   const status = scriptStatus[name]?.connected;
-  tile.classList.remove('status-ok', 'status-error');
-  if (status === true || status === 1 || status === "true") tile.classList.add('status-ok');
-  else tile.classList.add('status-error');
+  tile.classList.remove("status-ok", "status-error");
+  if (status === true || status === 1 || status === "true")
+    tile.classList.add("status-ok");
+  else tile.classList.add("status-error");
   return tile;
 }
 
@@ -105,7 +127,7 @@ function openDetailsModal(name) {
 function refreshModal() {
   if (!currentModalScript) return;
   const name = currentModalScript;
-  const s = scripts.find(s => s.name === name) || {};
+  const s = scripts.find((s) => s.name === name) || {};
   const log = latestLogs[name]?.log || "";
   const stat = scriptStats[name] || {};
   const status = scriptStatus[name] || {};
@@ -113,12 +135,19 @@ function refreshModal() {
   let min = stat.min !== undefined ? stat.min + " ms" : "—";
   let max = stat.max !== undefined ? stat.max + " ms" : "—";
   let history = stat.history || [];
-  let uptime = (status.connected === true || status.connected === 1 || status.connected === "true") ? "100%" : "0%";
-  let last = log ? new Date(latestLogs[name]?.timestamp).toLocaleString('fr-FR') : "—";
+  let uptime =
+    status.connected === true ||
+    status.connected === 1 ||
+    status.connected === "true"
+      ? "100%"
+      : "0%";
+  let last = log
+    ? new Date(latestLogs[name]?.timestamp).toLocaleString("fr-FR")
+    : "—";
   let logsTable = `<div style="margin-top:16px;">
       <b>Dernier log reçu :</b><br>
       <div style="margin-top:6px;padding:8px 12px;background:#161c1f;border-radius:7px;color:#d0ffe0;">${log ? log : "Aucun log récent."}</div>
-      <div style="margin-top:16px;font-size:0.97em;color:#aaa;">${last !== "—" ? "Reçu le "+last : ""}</div>
+      <div style="margin-top:16px;font-size:0.97em;color:#aaa;">${last !== "—" ? "Reçu le " + last : ""}</div>
     </div>`;
   if (stat.history && stat.history.length) {
     logsTable += `<table style="width:100%;margin-top:20px;border-radius:7px;overflow:hidden;">
@@ -129,14 +158,20 @@ function refreshModal() {
         <th style="text-align:left;">Latence</th>
       </tr></thead>
       <tbody>
-      ${stat.history.slice(-10).reverse().map((val, i) => `
-        <tr style="background:${i%2 ? "#23273a":"#20232a"}">
+      ${stat.history
+        .slice(-10)
+        .reverse()
+        .map(
+          (val, i) => `
+        <tr style="background:${i % 2 ? "#23273a" : "#20232a"}">
           <td style="color:#21f297;font-weight:600;padding:7px 15px;">UP</td>
-          <td>${new Date(Date.now()-i*60000).toLocaleTimeString('fr-FR')}</td>
+          <td>${new Date(Date.now() - i * 60000).toLocaleTimeString("fr-FR")}</td>
           <td>OK</td>
           <td><span style="font-family:monospace;">${val} ms</span></td>
         </tr>
-      `).join('')}
+      `,
+        )
+        .join("")}
       </tbody>
     </table>`;
   }
@@ -148,13 +183,19 @@ function refreshModal() {
         <tr><th>Type</th><th>Message</th><th>Date/Heure</th></tr>
       </thead>
       <tbody>
-        ${activityLogs[name].slice(-10).reverse().map(l => `
+        ${activityLogs[name]
+          .slice(-10)
+          .reverse()
+          .map(
+            (l) => `
           <tr>
             <td>${l.type}</td>
             <td>${l.message}</td>
-            <td>${l.time ? new Date(l.time).toLocaleString('fr-FR') : ''}</td>
+            <td>${l.time ? new Date(l.time).toLocaleString("fr-FR") : ""}</td>
           </tr>
-        `).join('')}
+        `,
+          )
+          .join("")}
       </tbody>
     </table>`;
   }
@@ -185,7 +226,7 @@ function refreshModal() {
       <div style="flex:1;"></div>
       <div style="display:flex;gap:38px;">
         <div><div style="font-size:1.18em;font-weight:600;">Réponse</div>
-          <div style="font-size:1.7em;">${stat.history?.length ? stat.history[stat.history.length-1]+"ms":"—"}</div></div>
+          <div style="font-size:1.7em;">${stat.history?.length ? stat.history[stat.history.length - 1] + "ms" : "—"}</div></div>
         <div><div style="font-size:1.18em;font-weight:600;">Réponse Moyenne</div>
           <div style="font-size:1.5em;">${avg}</div></div>
         <div><div style="font-size:1.18em;font-weight:600;">Disponibilité</div>
@@ -205,78 +246,92 @@ function refreshModal() {
   `;
 
   setTimeout(() => {
-    if (modalChart) { modalChart.destroy(); }
-    const ctx = document.getElementById('modalChart').getContext('2d');
+    if (modalChart) {
+      modalChart.destroy();
+    }
+    const ctx = document.getElementById("modalChart").getContext("2d");
     modalChart = new Chart(ctx, {
-      type: 'line',
+      type: "line",
       data: {
         labels: history.map((_, i) => ""),
-        datasets: [{
-          data: history,
-          borderColor: "#26e85f",
-          pointRadius: 0,
-          fill: false,
-          tension: 0.22,
-          borderWidth: 2.2,
-        }]
+        datasets: [
+          {
+            data: history,
+            borderColor: "#26e85f",
+            pointRadius: 0,
+            fill: false,
+            tension: 0.22,
+            borderWidth: 2.2,
+          },
+        ],
       },
       options: {
         responsive: false,
         plugins: { legend: { display: false } },
-        scales: { x: { display: false }, y: { display: true, beginAtZero: true } }
-      }
+        scales: {
+          x: { display: false },
+          y: { display: true, beginAtZero: true },
+        },
+      },
     });
   }, 50);
 }
 
-function closeDetailsModal() { detailsModal.classList.remove("open"); currentModalScript = null; }
+function closeDetailsModal() {
+  detailsModal.classList.remove("open");
+  currentModalScript = null;
+}
 window.closeDetailsModal = closeDetailsModal;
 
 const socket = io();
-window.sendAction = function(name, action) {
-  socket.emit('action', { name, command: action });
+window.sendAction = function (name, action) {
+  socket.emit("action", { name, command: action });
 };
 
-socket.on('scripts', arr => {
+socket.on("scripts", (arr) => {
   scripts = arr;
-  categories = Array.from(new Set(arr.map(s => s.category).filter(Boolean)));
+  categories = Array.from(new Set(arr.map((s) => s.category).filter(Boolean)));
   if (currentCategory !== "home" && !categories.includes(currentCategory)) {
     currentCategory = "home";
   }
-  renderSidebar(); renderTiles();
+  renderSidebar();
+  renderTiles();
   if (currentModalScript) refreshModal();
 });
 
-socket.on('log', data => {
+socket.on("log", (data) => {
   latestLogs[data.name] = data;
   renderTiles();
   if (currentModalScript === data.name) refreshModal();
 });
-socket.on('status', ({ name, connected }) => {
+socket.on("status", ({ name, connected }) => {
   scriptStatus[name] = { connected };
   renderTiles();
   if (currentModalScript === name) refreshModal();
 });
-socket.on('stat_graphique', data => {
+socket.on("stat_graphique", (data) => {
   scriptStats[data.name] = scriptStats[data.name] || { history: [] };
   let metric = typeof data.success === "number" ? data.success : 0;
   scriptStats[data.name].history.push(metric);
-  if (scriptStats[data.name].history.length > 70) scriptStats[data.name].history.shift();
+  if (scriptStats[data.name].history.length > 70)
+    scriptStats[data.name].history.shift();
   let arr = scriptStats[data.name].history;
   scriptStats[data.name].min = Math.min(...arr);
   scriptStats[data.name].max = Math.max(...arr);
-  scriptStats[data.name].avg = Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+  scriptStats[data.name].avg = Math.round(
+    arr.reduce((a, b) => a + b, 0) / arr.length,
+  );
   if (currentModalScript === data.name) refreshModal();
 });
-socket.on('activity_log', ({ name, log }) => {
+socket.on("activity_log", ({ name, log }) => {
   activityLogs[name] = activityLogs[name] || [];
   activityLogs[name].push(log);
   if (activityLogs[name].length > 500) activityLogs[name].shift();
   if (currentModalScript === name) refreshModal();
 });
 
-function showToast(msg, type = 'info') {
-  let toast = document.createElement('div');
+function showToast(msg, type = "info") {
+  let toast = document.createElement("div");
   toast.className = `dashboard-toast dashboard-toast-${type}`;
   toast.textContent = msg;
   document.body.appendChild(toast);
@@ -285,6 +340,6 @@ function showToast(msg, type = 'info') {
     setTimeout(() => toast.remove(), 350);
   }, 2200);
 }
-socket.on('actionResult', ({ name, status }) => {
-  showToast(`(${name}) : ${status}`, 'ok');
+socket.on("actionResult", ({ name, status }) => {
+  showToast(`(${name}) : ${status}`, "ok");
 });

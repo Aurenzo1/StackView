@@ -7,7 +7,11 @@ const socket = io("http://dashboard:3333"); // ou http://localhost:3333 si hors 
 let isRunning = true;
 
 socket.on("connect", () => {
-  socket.emit("identify", { name: SCRIPT_NAME, token: TOKEN, category: CATEGORY });
+  socket.emit("identify", {
+    name: SCRIPT_NAME,
+    token: TOKEN,
+    category: CATEGORY,
+  });
   console.log(`[${SCRIPT_NAME}] connecté au dashboard`);
   // Simule l'activité
   startProcess();
@@ -27,7 +31,10 @@ function doWork() {
   if (!isRunning) return;
   // Simule une tâche
   socket.emit("log", { name: SCRIPT_NAME, log: "OK" });
-  socket.emit("stat_graphique", { name: SCRIPT_NAME, success: Math.floor(Math.random() * 100) + 100 });
+  socket.emit("stat_graphique", {
+    name: SCRIPT_NAME,
+    success: Math.floor(Math.random() * 100) + 100,
+  });
   setTimeout(doWork, 5000); // toutes les 5s
 }
 
